@@ -2,126 +2,135 @@ import numpy as np
 import torch
 import torchvision
 import matplotlib.pyplot as plt
-from time import time
 from torchvision import datasets, transforms
 from torch import nn, optim
 
-def view_classify(img, ps):
-    ''' Function for viewing an image and it's predicted classes.
-    '''
-    ps = ps.data.numpy().squeeze()
+batch_size = 32
+learning_rate = 0.01
+num_epochs = 20
 
-    fig, (ax1, ax2) = plt.subplots(figsize=(6,9), ncols=2)
-    ax1.imshow(img.resize_(1, 28, 28).numpy().squeeze())
-    ax1.axis('off')
-    ax2.barh(np.arange(10), ps)
-    ax2.set_aspect(0.1)
-    ax2.set_yticks(np.arange(10))
-    ax2.set_yticklabels(np.arange(10))
-    ax2.set_title('Class Probability')
-    ax2.set_xlim(0, 1.1)
-    plt.tight_layout()
 
-transform = transforms.Compose([transforms.ToTensor(),
-                              transforms.Normalize((0.5,), (0.5,)),
-                              ])
+class SimpleModel(nn.Module):
+    def __init__(self, num_classes=10):
+        super(SimpleModel, self).__init__()
 
-trainset = datasets.MNIST('PATH_TO_STORE_TRAINSET', download=True, train=True, transform=transform)
-valset = datasets.MNIST('PATH_TO_STORE_TESTSET', download=True, train=False, transform=transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
-valloader = torch.utils.data.DataLoader(valset, batch_size=64, shuffle=True)
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(1, 32, kernel_size=5, padding=2, stride=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2))
 
-dataiter = iter(trainloader)
+        self.fc = nn.Linear(14 * 14 * 32, num_classes)
+
+    def forward(self, x):
+        out = self.conv1(x)
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
+
+        return out
+
+
+# Data Loader
+train_loader = torch.utils.data.DataLoader(
+    datasets.MNIST("data", train=True, download=True,
+                   transform=transforms.Compose([
+                       transforms.ToTensor(),
+                       transforms.Normalize((0.1307,), (0.3081,)),
+                   ])),
+    batch_size=batch_size,
+    shuffle=True)
+
+val_loader = torch.utils.data.DataLoader(
+    datasets.MNIST("data", train=False, download=True,
+                   transform=transforms.Compose([
+                       transforms.ToTensor(),
+                       transforms.Normalize((0.1307,), (0.3081,)),
+                   ])),
+    batch_size=batch_size,
+    shuffle=False)
+
+
+# Visualize Data
+def imshow(img, mean, std):
+    img = img / std + mean  # unnormalize
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.show()
+
+
+dataiter = iter(train_loader)
 images, labels = dataiter.next()
+imshow(torchvision.utils.make_grid(images), 0.1307, 0.3081)
+print(labels)
 
-print(images.shape)
-print(labels.shape)
+# Get Device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-plt.imshow(images[0].numpy().squeeze(), cmap='gray_r')
+# Model
+model = SimpleModel().to(device)
 
-figure = plt.figure()
-num_of_images = 60
-for index in range(1, num_of_images + 1):
-    plt.subplot(6, 10, index)
-    plt.axis('off')
-    plt.imshow(images[index].numpy().squeeze(), cmap='gray_r')
+# Loss function
+criterion = nn.CrossEntropyLoss()
 
-input_size = 784
-hidden_sizes = [128, 64]
-output_size = 10
+# Optimizer
+optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
-model = nn.Sequential(nn.Linear(input_size, hidden_sizes[0]),
-                      nn.ReLU(),
-                      nn.Linear(hidden_sizes[0], hidden_sizes[1]),
-                      nn.ReLU(),
-                      nn.Linear(hidden_sizes[1], output_size),
-                      nn.LogSoftmax(dim=1))
-print(model)
+num_steps = len(train_loader)
 
-criterion = nn.NLLLoss()
-images, labels = next(iter(trainloader))
-images = images.view(images.shape[0], -1)
+for epoch in range(num_epochs):
 
-logps = model(images) #log probabilities
-loss = criterion(logps, labels) #calculate the NLL loss
+    # ---------- TRAINING ----------
+    # set model to training
+    model.train()
 
-print('Before backward pass: \n', model[0].weight.grad)
-loss.backward()
-print('After backward pass: \n', model[0].weight.grad)
+    total_loss = 0
 
-optimizer = optim.SGD(model.parameters(), lr=0.003, momentum=0.9)
-time0 = time()
-epochs = 15
-for e in range(epochs):
-    running_loss = 0
-    for images, labels in trainloader:
-        # Flatten MNIST images into a 784 long vector
-        images = images.view(images.shape[0], -1)
+    for i, (images, labels) in enumerate(train_loader):
+        images, labels = images.to(device), labels.to(device)
 
-        # Training pass
+        # Zero gradients
         optimizer.zero_grad()
 
-        output = model(images)
-        loss = criterion(output, labels)
+        # Forward
+        outputs = model(images)
 
-        # This is where the model learns by backpropagating
+        # Compute Loss
+        loss = criterion(outputs, labels)
+
+        # Backward
         loss.backward()
-
-        # And optimizes its weights here
         optimizer.step()
 
-        running_loss += loss.item()
-    else:
-        print("Epoch {} - Training loss: {}".format(e, running_loss / len(trainloader)))
-print("\nTraining Time (in minutes) =", (time() - time0) / 60)
+        total_loss += loss.item()
 
-images, labels = next(iter(valloader))
+        # Print Log
+        if (i + 1) % 100 == 0:
+            print("Epoch {}/{} - Step: {}/{} - Loss: {:.4f}".format(
+                epoch + 1, num_epochs, i, num_steps, total_loss / (i + 1)))
 
-img = images[0].view(1, 784)
-with torch.no_grad():
-    logps = model(img)
+    # ---------- VALIDATION ----------
+    # set model to evaluating
+    model.eval()
 
-ps = torch.exp(logps)
-probab = list(ps.numpy()[0])
-print("Predicted Digit =", probab.index(max(probab)))
-view_classify(img.view(1, 28, 28), ps)
+    val_losses = 0
 
-correct_count, all_count = 0, 0
-for images, labels in valloader:
-    for i in range(len(labels)):
-        img = images[i].view(1, 784)
-        with torch.no_grad():
-            logps = model(img)
+    with torch.no_grad():
+        correct = 0
+        total = 0
+        for _, (images, labels) in enumerate(val_loader):
+            images, labels = images.to(device), labels.to(device)
 
-        ps = torch.exp(logps)
-        probab = list(ps.numpy()[0])
-        pred_label = probab.index(max(probab))
-        true_label = labels.numpy()[i]
-        if (true_label == pred_label):
-            correct_count += 1
-        all_count += 1
+            outputs = model(images)
 
-print("Number Of Images Tested =", all_count)
-print("\nModel Accuracy =", (correct_count / all_count))
+            _, predicted = torch.max(outputs, 1)
 
+            loss = criterion(outputs, labels)
 
+            val_losses += loss.item()
+
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+
+        print("Epoch {} - Accuracy: {} - Validation Loss : {:.4f}".format(
+            epoch + 1,
+            correct / total,
+            val_losses / (len(val_loader))))
