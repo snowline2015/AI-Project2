@@ -113,5 +113,5 @@ for epoch in range(num_epochs):
 
         print("Epoch {} - Accuracy: {} - Validation Loss : {:.4f}".format(
             epoch + 1,
-            correct / total,
+            correct / total * 100,
             val_losses / (len(val_loader))))
