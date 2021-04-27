@@ -4,30 +4,11 @@ import torchvision
 import matplotlib.pyplot as plt
 from torchvision import datasets, transforms
 from torch import nn, optim
+from Model import Model1, Model2
 
 batch_size = 32
 learning_rate = 0.01
 num_epochs = 20
-
-
-class SimpleModel(nn.Module):
-    def __init__(self, num_classes=10):
-        super(SimpleModel, self).__init__()
-
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=5, padding=2, stride=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2))
-
-        self.fc = nn.Linear(14 * 14 * 32, num_classes)
-
-    def forward(self, x):
-        out = self.conv1(x)
-        out = out.view(out.size(0), -1)
-        out = self.fc(out)
-
-        return out
-
 
 # Data Loader
 train_loader = torch.utils.data.DataLoader(
@@ -66,7 +47,7 @@ print(labels)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Model
-model = SimpleModel().to(device)
+model = Model2().to(device)
 
 # Loss function
 criterion = nn.CrossEntropyLoss()
