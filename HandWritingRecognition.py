@@ -48,10 +48,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Model
 mod_num = int(input("1. Fully Connected Layer\n2. Convolutional layer, Pooling layer, Fully connected layer\n"
       "Choose model to train: "))
-if mod_num == 1:
-    model = Model1().to(device)
-else:
-    model = Model2().to(device)
+model = Model1().to(device) if mod_num == 1 else Model2().to(device)
 
 # Loss function
 criterion = nn.CrossEntropyLoss()
