@@ -29,7 +29,7 @@ val_loader = torch.utils.data.DataLoader(
     batch_size=batch_size,
     shuffle=False)
 
-
+"""
 # Visualize Data
 def imshow(img, mean, std):
     img = img / std + mean  # unnormalize
@@ -41,6 +41,7 @@ dataiter = iter(train_loader)
 images, labels = dataiter.next()
 imshow(torchvision.utils.make_grid(images), 0.1307, 0.3081)
 print(labels)
+"""
 
 # Device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -71,7 +72,7 @@ for epoch in range(num_epochs):
         optimizer.step()
         total_loss += loss.item()
 
-        if (i + 1) % 100 == 0:
+        if i % 100 == 0:
             print("Epoch {}/{} - Step: {}/{} - Loss: {:.4f}".format(
                 epoch + 1, num_epochs, i, num_steps, total_loss / (i + 1)))
 
@@ -93,6 +94,4 @@ for epoch in range(num_epochs):
             correct += (predicted == labels).sum().item()
 
         print("Epoch {} - Accuracy: {}% - Validation Loss : {:.4f}\n".format(
-            epoch + 1,
-            correct / total * 100,
-            val_losses / (len(val_loader))))
+            epoch + 1, correct / total * 100, val_losses / (len(val_loader))))
