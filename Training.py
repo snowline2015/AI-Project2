@@ -8,40 +8,37 @@ from Model import Model1, Model2
 
 batch_size = 32
 learning_rate = 0.01
-num_epochs = 20
+num_epochs = 3
+
+
+def predict_image(img, model):
+    batch = img.unsqueeze(0)
+    backup = model(batch)
+    _, preds = torch.max(backup, dim=1)
+    return preds[0].item()
+
+
+def imshow(img, mean=0.1307, std=0.3081):
+    img = img / std + mean  # unnormalize
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.show()
+
 
 # Data Loader
 train_loader = torch.utils.data.DataLoader(
     datasets.MNIST("data", train=True, download=True,
                    transform=transforms.Compose([
                        transforms.ToTensor(),
-                       transforms.Normalize((0.1307,), (0.3081,)),
-                   ])),
-    batch_size=batch_size,
-    shuffle=True)
+                       transforms.Normalize((0.1307,), (0.3081,)), ])),
+    batch_size=batch_size, shuffle=True)
 
 val_loader = torch.utils.data.DataLoader(
     datasets.MNIST("data", train=False, download=True,
                    transform=transforms.Compose([
                        transforms.ToTensor(),
-                       transforms.Normalize((0.1307,), (0.3081,)),
-                   ])),
-    batch_size=batch_size,
-    shuffle=False)
-
-"""
-# Visualize Data
-def imshow(img, mean, std):
-    img = img / std + mean  # unnormalize
-    npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.show()
-
-dataiter = iter(train_loader)
-images, labels = dataiter.next()
-imshow(torchvision.utils.make_grid(images), 0.1307, 0.3081)
-print(labels)
-"""
+                       transforms.Normalize((0.1307,), (0.3081,)), ])),
+    batch_size=batch_size, shuffle=False)
 
 # Device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -72,11 +69,12 @@ for epoch in range(num_epochs):
         optimizer.step()
         total_loss += loss.item()
 
+        """
         if i % 100 == 0:
             print("Epoch {}/{} - Step: {}/{} - Loss: {:.4f}".format(
                 epoch + 1, num_epochs, i, num_steps, total_loss / (i + 1)))
+                """
 
-    torch.save(model.state_dict(), 'model.pth')
     model.eval()
 
     val_losses = 0
@@ -95,3 +93,21 @@ for epoch in range(num_epochs):
 
         print("Epoch {} - Accuracy: {}% - Validation Loss : {:.4f}\n".format(
             epoch + 1, correct / total * 100, val_losses / (len(val_loader))))
+
+
+torch.save(model, 'data/model.pth')
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = torch.load('data/model.pth')
+model.eval()
+
+dataiter = iter(val_loader)
+images, labels = dataiter.next()
+
+while (True):
+    i = int(input("Input image index to predict (0 to exit): "))
+    if (i == 0 or i > 32): break
+    imshow(images[i - 1])
+    print('Label:', labels[i - 1], ', Predicted:', predict_image(images[i - 1], model))
+
+
+

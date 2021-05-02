@@ -11,11 +11,10 @@ class Model1(nn.Module):
         self.func = nn.LeakyReLU()
 
     def forward(self, x):
-        x = x.view(x.size(0), -1)
-        out = self.fc1(x)
-        out = self.func(out)
-        out = self.fc2(out)
-        out = self.func(out)
+        x = x.reshape(-1, 784)
+        #x = x.view(x.size(0), -1)
+        out = self.func(self.fc1(x))
+        out = self.func(self.fc2(out))
         out = self.fc3(out)
         return out
 
