@@ -4,11 +4,13 @@ import torchvision
 import matplotlib.pyplot as plt
 from torchvision import datasets, transforms
 from torch import nn, optim
+from PIL import Image
+from tkinter import filedialog
 from Model import Model1, Model2
 
 batch_size = 32
 learning_rate = 0.01
-num_epochs = 3
+num_epochs = 1
 
 
 def predict_image(img, model):
@@ -19,7 +21,7 @@ def predict_image(img, model):
 
 
 def imshow(img, mean=0.1307, std=0.3081):
-    img = img / std + mean  # unnormalize
+    img = img / std + mean
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
@@ -69,11 +71,9 @@ for epoch in range(num_epochs):
         optimizer.step()
         total_loss += loss.item()
 
-        """
         if i % 100 == 0:
             print("Epoch {}/{} - Step: {}/{} - Loss: {:.4f}".format(
                 epoch + 1, num_epochs, i, num_steps, total_loss / (i + 1)))
-                """
 
     model.eval()
 
@@ -95,19 +95,40 @@ for epoch in range(num_epochs):
             epoch + 1, correct / total * 100, val_losses / (len(val_loader))))
 
 
-torch.save(model, 'data/model.pth')
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = torch.load('data/model.pth')
+torch.save(model, 'test/model.pth')
+model = torch.load('test/model.pth')
 model.eval()
 
 dataiter = iter(val_loader)
 images, labels = dataiter.next()
 
 while (True):
-    i = int(input("Input image index to predict (0 to exit): "))
+    i = int(input("Input image index to predict (1-32, 0 to exit): "))
     if (i == 0 or i > 32): break
     imshow(images[i - 1])
     print('Label:', labels[i - 1], ', Predicted:', predict_image(images[i - 1], model))
+
+
+
+
+
+
+file_path = filedialog.askopenfilename()
+
+img = Image.open(file_path)
+transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,)), ])
+x = transform(img)
+x = x.unsqueeze(0)
+
+output = model(x)
+pred = torch.argmax(output, 1)
+print('Image predicted as ', pred)
+
+
+
+
+
 
 
 
