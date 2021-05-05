@@ -1,31 +1,14 @@
 import numpy as np
 import torch
 import torchvision
-import matplotlib.pyplot as plt
 from torchvision import datasets, transforms
 from torch import nn, optim
-from PIL import Image
-from tkinter import filedialog
+import Function
 from Model import Model1, Model2
 
 batch_size = 32
 learning_rate = 0.01
-num_epochs = 1
-
-
-def predict_image(img, model):
-    batch = img.unsqueeze(0)
-    backup = model(batch)
-    _, preds = torch.max(backup, dim=1)
-    return preds[0].item()
-
-
-def imshow(img, mean=0.1307, std=0.3081):
-    img = img / std + mean
-    npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.show()
-
+num_epochs = 20
 
 # Data Loader
 train_loader = torch.utils.data.DataLoader(
@@ -106,24 +89,14 @@ images, labels = dataiter.next()
 while (True):
     i = int(input("Input image index to predict (1-32, 0 to exit): "))
     if (i == 0 or i > 32): break
-    imshow(images[i - 1])
-    print('Label:', labels[i - 1], ', Predicted:', predict_image(images[i - 1], model))
+    Function.imshow(images[i - 1])
+    print('Label:', labels[i - 1], ', Predicted:', Function.predict_image(images[i - 1], model))
 
+file_path = Function.filedialog.askopenfilename()
 
-
-
-
-
-file_path = filedialog.askopenfilename()
-
-img = Image.open(file_path)
-transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,)), ])
-x = transform(img)
-x = x.unsqueeze(0)
-
-output = model(x)
-pred = torch.argmax(output, 1)
-print('Image predicted as ', pred)
+input_img = Function.prepare_image(file_path)
+prediction = torch.argmax(model(input_img)).item()
+print('Image predicted as ', prediction)
 
 
 

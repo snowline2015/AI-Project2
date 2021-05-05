@@ -23,10 +23,10 @@ class Model2(nn.Module):
     def __init__(self, num_classes=10):
         super(Model2, self).__init__()
         self.conv = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=5, padding=2),
+            nn.Conv2d(1, 32, kernel_size=5, padding=2, stride=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2))
-        self.fc = nn.Linear(14 * 14 * 32, num_classes)          #  (((W - K + 2P)/S) + 1)
+        self.fc = nn.Linear(14 * 14 * 32, num_classes)          # (((W - K + 2P)/S) + 1) : cong thuc
 
     def forward(self, x):
         out = self.conv(x)
