@@ -1,30 +1,8 @@
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-import tkinter as tk
-from tkinter import filedialog
-from tkinter import ttk
-from tkinter.messagebox import showinfo
 from PIL import Image, ImageFilter
 
-"""
-def select_file():
-    filename = filedialog.askopenfilename(
-        title='Open a file',
-        initialdir='/')
-
-
-
-root = tk.Tk()
-root.title('Open image file to test')
-root.resizable(False, False)
-root.geometry('300x150')
-
-open_button = ttk.Button(root, text='Open a File', command=select_file)
-open_button.pack(expand=True)
-
-root.mainloop()    # run
-"""
 
 def predict_image(img, model):
     batch = img.unsqueeze(0)
@@ -40,11 +18,8 @@ def imshow(img, mean=0.1307, std=0.3081):
     plt.show()
 
 
+# Coverting image to MNIST dataset
 def prepare_image(path: str):
-    """
-    Converting image to MNIST dataset format
-    """
-
     im = Image.open(path).convert('L')
     width = float(im.size[0])
     height = float(im.size[1])
@@ -60,19 +35,18 @@ def prepare_image(path: str):
         wtop = int(round(((28 - nheight) / 2), 0))  # calculate horizontal position
         new_image.paste(img, (4, wtop))  # paste resized image on white canvas
     else:
-        # Height is bigger. Heigth becomes 20 pixels.
+        # Height is bigger. Height becomes 20 pixels.
         nwidth = int(round((20.0 / height * width), 0))  # resize width according to ratio height
         if (nwidth == 0):  # rare case but minimum is 1 pixel
             nwidth = 1
             # resize and sharpen
         img = im.resize((nwidth, 20), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
-        wleft = int(round(((28 - nwidth) / 2), 0))  # caculate vertical pozition
+        wleft = int(round(((28 - nwidth) / 2), 0))  # calculate vertical position
         new_image.paste(img, (wleft, 4))  # paste resized image on white canvas
 
     pixels = list(new_image.getdata())  # get pixel values
     pixels_normalized = [(255 - x) * 1.0 / 255.0 for x in pixels]
 
-    # Need adequate shape
     adequate_shape = np.reshape(pixels_normalized, (1, 28, 28))
     output = torch.FloatTensor(adequate_shape).unsqueeze(0)
     return output

@@ -77,20 +77,22 @@ for epoch in range(num_epochs):
         print("Epoch {} - Accuracy: {}% - Validation Loss : {:.4f}\n".format(
             epoch + 1, correct / total * 100, val_losses / (len(val_loader))))
 
+torch.save(model.state_dict(), 'test/model.pth')
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.save(model, 'test/model.pth')
-model = torch.load('test/model.pth')
+
+model = Model1() if mod_num == 1 else Model2()
+model.load_state_dict(torch.load('test/model.pth'))
 model.eval()
 
 dataiter = iter(val_loader)
 images, labels = dataiter.next()
 
 while (True):
-    i = int(input("Input image index to predict (1-32, 0 to exit): "))
-    if (i == 0 or i > 32): break
+    i = int(input("Input image index to predict (1-32, outrange to exit): "))
+    if (i <= 0 or i > 32): break
     Function.imshow(images[i - 1])
     print('Label:', labels[i - 1], ', Predicted:', Function.predict_image(images[i - 1], model))
+
 
 file_path = Function.filedialog.askopenfilename()
 

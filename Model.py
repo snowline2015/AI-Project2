@@ -10,7 +10,7 @@ class Model1(nn.Module):
             nn.ReLU(),
             nn.Linear(512, 256),
             nn.ReLU(),
-            nn.Linear(256, 10),
+            nn.Linear(256, num_classes),
             nn.ReLU())
 
     def forward(self, x):
@@ -25,8 +25,8 @@ class Model2(nn.Module):
         self.conv = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=5, padding=2, stride=1),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2))
-        self.fc = nn.Linear(14 * 14 * 32, num_classes)          # (((W - K + 2P)/S) + 1) : cong thuc
+            nn.MaxPool2d(kernel_size=2, stride=2))              # divide 2
+        self.fc = nn.Linear(14 * 14 * 32, num_classes)          # (((W - K + 2P)/S) + 1) : formula
 
     def forward(self, x):
         out = self.conv(x)
