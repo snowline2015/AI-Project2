@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFilter
+from Model import Model1, Model2
 
 
 def predict_image(img, model):
@@ -18,7 +19,7 @@ def imshow(img, mean=0.1307, std=0.3081):
     plt.show()
 
 
-# Coverting image to MNIST dataset
+# Converting image to MNIST dataset
 def prepare_image(path: str):
     im = Image.open(path).convert('L')
     width = float(im.size[0])
@@ -50,3 +51,19 @@ def prepare_image(path: str):
     adequate_shape = np.reshape(pixels_normalized, (1, 28, 28))
     output = torch.FloatTensor(adequate_shape).unsqueeze(0)
     return output
+
+
+def test_image(file_path: str, mod_num):
+    if mod_num == 1:
+        model = Model1()
+        model.load_state_dict(torch.load('test/model1.pth'))
+    else:
+        model = Model2()
+        model.load_state_dict(torch.load('test/model2.pth'))
+    model.eval()
+
+    input_img = prepare_image(file_path)
+    prediction = torch.argmax(model(input_img)).item()
+
+    import ctypes
+    ctypes.windll.user32.MessageBoxW(0, prediction, "Handwriting Recognition", 1)

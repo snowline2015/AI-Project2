@@ -6,8 +6,8 @@ class Model1(nn.Module):
         super(Model1, self).__init__()
         self.flatten = nn.Flatten()
         self.linear_relu = nn.Sequential(
-            nn.Linear(28 * 28, 512),
-            nn.ReLU(),
+            nn.Linear(28 * 28, 512),            # Default MNIST size 784
+            nn.ReLU(),                          # Accuracy rate of ReLU is approximate to LeakyReLu
             nn.Linear(512, 256),
             nn.ReLU(),
             nn.Linear(256, num_classes),
