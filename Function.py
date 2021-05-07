@@ -64,6 +64,4 @@ def test_image(file_path: str, mod_num):
 
     input_img = prepare_image(file_path)
     prediction = torch.argmax(model(input_img)).item()
-
-    import ctypes
-    ctypes.windll.user32.MessageBoxW(0, prediction, "Handwriting Recognition", 1)
+    return prediction
