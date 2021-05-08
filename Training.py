@@ -29,8 +29,10 @@ val_loader = torch.utils.data.DataLoader(
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Model
-mod_num = int(input("1. Fully Connected Layer\n2. Convolutional layer, Pooling layer, Fully connected layer\n"
-      "Choose model to train: "))
+mod_num = 0
+while mod_num not in range(1, 3):
+    mod_num = int(input("1. Fully Connected Layer\n2. Convolutional layer, Pooling layer, Fully connected layer\n"
+        "Choose model to train: "))
 model = Model1().to(device) if mod_num == 1 else Model2().to(device)
 
 # Loss function
@@ -75,7 +77,7 @@ for epoch in range(num_epochs):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-        print("Epoch {} - Accuracy: {}% - Validation Loss : {:.4f}\n".format(
+        print("Epoch {} - Accuracy: {:.2f}% - Validation Loss : {:.4f}\n".format(
             epoch + 1, correct / total * 100, val_losses / (len(val_loader))))
 
 if mod_num == 1:
@@ -86,20 +88,9 @@ else:
 dataiter = iter(val_loader)
 images, labels = dataiter.next()
 
-while (True):
-    i = int(input("Input image index to predict (1-32, outrange to exit): "))
-    if (i <= 0 or i > 32): break
+while True:
+    i = int(input("Input image index to predict (1-32, out-range to exit): "))
+    if i <= 0 or i > 32:
+        break
     Function.imshow(images[i - 1])
     print('Label:', labels[i - 1], ', Predicted:', Function.predict_image(images[i - 1], model))
-
-
-
-
-
-
-
-
-
-
-
-

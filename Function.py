@@ -7,8 +7,7 @@ from Model import Model1, Model2
 
 def predict_image(img, model):
     batch = img.unsqueeze(0)
-    backup = model(batch)
-    _, preds = torch.max(backup, dim=1)
+    _, preds = torch.max(model(batch), dim=1)
     return preds[0].item()
 
 
@@ -45,6 +44,8 @@ def prepare_image(path: str):
         wleft = int(round(((28 - nwidth) / 2), 0))  # calculate vertical position
         new_image.paste(img, (wleft, 4))  # paste resized image on white canvas
 
+    new_image.save("test/mnist_format.png")
+
     pixels = list(new_image.getdata())  # get pixel values
     pixels_normalized = [(255 - x) * 1.0 / 255.0 for x in pixels]
 
@@ -53,15 +54,16 @@ def prepare_image(path: str):
     return output
 
 
-def test_image(file_path: str, mod_num):
+def test_image(mod_num):
     if mod_num == 1:
         model = Model1()
         model.load_state_dict(torch.load('test/model1.pth'))
     else:
         model = Model2()
         model.load_state_dict(torch.load('test/model2.pth'))
+
     model.eval()
 
-    input_img = prepare_image(file_path)
-    prediction = torch.argmax(model(input_img)).item()
-    return prediction
+    input_img = prepare_image('test/test.png')
+    prediction = torch.argmax(model(input_img), 1)
+    return str(prediction[0].item())
