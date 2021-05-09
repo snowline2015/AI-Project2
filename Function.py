@@ -63,7 +63,6 @@ def test_image(mod_num):
         model.load_state_dict(torch.load('test/model2.pth'))
 
     model.eval()
-
-    input_img = prepare_image('test/test.png')
-    prediction = torch.argmax(model(input_img), dim=1)
-    return str(prediction[0].item())
+    input_img = prepare_image('test/im_test.png')
+    prediction = torch.argmax(model(input_img))
+    return str(prediction.item())

@@ -58,11 +58,11 @@ class MyPaintApp(App):
             Rectangle(pos=self.painter.pos, size=self.painter.size)
 
     def test_model1(self, obj):
-        self.painter.export_to_png('test/test.png')
+        self.painter.export_to_png('test/im_test.png')
         Mbox('Handwriting Recognition', test_image(1), 1)
 
     def test_model2(self, obj):
-        self.painter.export_to_png('test/test.png')
+        self.painter.export_to_png('test/im_test.png')
         Mbox('Handwriting Recognition', test_image(2), 1)
 
 if __name__ == '__main__':

@@ -5,17 +5,16 @@ import torch.nn.functional as F
 class Model1(nn.Module):                        # 3 Fully connected layers
     def __init__(self, num_classes=10):
         super(Model1, self).__init__()
-        self.flatten = nn.Flatten()
-        self.linear_relu = nn.Sequential(
+        self.linear_leaky_relu = nn.Sequential(
+            nn.Flatten(),
             nn.Linear(28 * 28, 128),            # Default MNIST size 784 = 28 * 28
-            nn.ReLU(),                          # Accuracy rate of ReLU is approximate to LeakyReLU
+            nn.LeakyReLU(),
             nn.Linear(128, 64),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(64, num_classes))
 
     def forward(self, x):
-        x = self.flatten(x)
-        out = self.linear_relu(x)
+        out = self.linear_leaky_relu(x)
         return F.log_softmax(out, dim=1)
 
 
@@ -23,13 +22,13 @@ class Model2(nn.Module):                        # 2 Convolutional layers, Poolin
     def __init__(self, num_classes=10):
         super(Model2, self).__init__()
 
-        self.conv = nn.Sequential(                                              # formula: (((W - K + 2P)/S) + 1)
-            nn.Conv2d(1, 32, kernel_size=5, padding=2, stride=1),               # [(28 - 5 + 2*2)/1] + 1 = 28
+        self.conv = nn.Sequential(                                          # formula: (((W - K + 2P)/S) + 1)
+            nn.Conv2d(1, 32, kernel_size=5, padding=2, stride=1),           # [(28 - 5 + 2*2)/1] + 1 = 28
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),                              # divide 2 (28 / 2 = 14)
-            nn.Conv2d(32, 64, kernel_size=5, padding=2, stride=1),              # [(14 - 5 + 2*2)/1] + 1 = 14
+            nn.MaxPool2d(kernel_size=2, stride=2),                          # divide 2 (28 / 2 = 14)
+            nn.Conv2d(32, 64, kernel_size=5, padding=2, stride=1),          # [(14 - 5 + 2*2)/1] + 1 = 14
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2))                              # divide 2 (14 / 2 = 7)
+            nn.MaxPool2d(kernel_size=2, stride=2))                          # divide 2 (14 / 2 = 7)
 
         self.linear_relu = nn.Sequential(
             nn.Linear(7 * 7 * 64, 64),
