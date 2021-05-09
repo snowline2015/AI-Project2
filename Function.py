@@ -64,5 +64,5 @@ def test_image(mod_num):
 
     model.eval()
     input_img = prepare_image('test/im_test.png')
-    prediction = torch.argmax(model(input_img))
-    return str(prediction.item())
+    prediction = torch.argmax(model(input_img)).item()
+    return str(prediction)
