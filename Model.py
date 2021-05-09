@@ -5,16 +5,16 @@ import torch.nn.functional as F
 class Model1(nn.Module):                        # 3 Fully connected layers
     def __init__(self, num_classes=10):
         super(Model1, self).__init__()
-        self.linear_leaky_relu = nn.Sequential(
+        self.linear_relu = nn.Sequential(
             nn.Flatten(),
             nn.Linear(28 * 28, 128),            # Default MNIST size 784 = 28 * 28
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Linear(128, 64),
-            nn.LeakyReLU(),
+            nn.ReLU(),
             nn.Linear(64, num_classes))
 
     def forward(self, x):
-        out = self.linear_leaky_relu(x)
+        out = self.linear_relu(x)
         return F.log_softmax(out, dim=1)
 
 

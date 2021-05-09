@@ -19,7 +19,7 @@ def imshow(img, mean=0.1307, std=0.3081):
 
 
 # Converting image to MNIST dataset
-def prepare_image(path: str):
+def prepare_image(path: str, mod_num):
     im = Image.open(path).convert('L')
     width = float(im.size[0])
     height = float(im.size[1])
@@ -49,8 +49,10 @@ def prepare_image(path: str):
     pixels = list(new_image.getdata())  # get pixel values
     pixels_normalized = [(255 - x) * 1.0 / 255.0 for x in pixels]
 
+    # Need adequate shape to 4D tensor for Model 2, no need for Model 1
     adequate_shape = np.reshape(pixels_normalized, (1, 28, 28))
-    output = torch.FloatTensor(adequate_shape).unsqueeze(0)
+    output = torch.FloatTensor(adequate_shape) if mod_num == 1 else \
+        torch.FloatTensor(adequate_shape).unsqueeze(0)
     return output
 
 
@@ -58,11 +60,15 @@ def test_image(mod_num):
     if mod_num == 1:
         model = Model1()
         model.load_state_dict(torch.load('test/model1.pth'))
+        model.eval()
+        input_img = prepare_image('test/im_test.png', 1)
     else:
         model = Model2()
         model.load_state_dict(torch.load('test/model2.pth'))
+        model.eval()
+        input_img = prepare_image('test/im_test.png', 2)
 
-    model.eval()
-    input_img = prepare_image('test/im_test.png')
     prediction = torch.argmax(model(input_img)).item()
     return str(prediction)
+    #_, preds = torch.max(model(input_img), 1)
+    #return str(preds[0].item())

@@ -50,9 +50,11 @@ for epoch in range(num_epochs):
 
     for i, (images, labels) in enumerate(train_loader):
         images, labels = images.to(device), labels.to(device)
+
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)
+
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
@@ -71,7 +73,9 @@ for epoch in range(num_epochs):
         for _, (images, labels) in enumerate(val_loader):
             images, labels = images.to(device), labels.to(device)
             outputs = model(images)
+
             _, predicted = torch.max(outputs, 1)
+
             loss = criterion(outputs, labels)
             val_losses += loss.item()
             total += labels.size(0)
@@ -85,6 +89,7 @@ if mod_num == 1:
 else:
     torch.save(model.state_dict(), 'test/model2.pth')
 
+model.eval()
 dataiter = iter(val_loader)
 images, labels = dataiter.next()
 
