@@ -5,6 +5,8 @@ from torchvision import datasets, transforms
 from torch import nn, optim
 import Function
 from Model import Model1, Model2
+from sklearn.metrics import accuracy_score, precision_score, f1_score, recall_score
+import matplotlib.pyplot as plt
 
 batch_size = 32
 learning_rate = 0.01
@@ -44,9 +46,16 @@ optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 num_steps = len(train_loader)
 
 # Train
+m_accu = []
+m_recall = []
+m_prec = []
+m_f1 = []
+
 for epoch in range(num_epochs):
     model.train()
     total_loss = 0
+    e_label = []
+    e_pred = []
 
     for i, (images, labels) in enumerate(train_loader):
         images, labels = images.to(device), labels.to(device)
@@ -76,6 +85,12 @@ for epoch in range(num_epochs):
 
             _, predicted = torch.max(outputs, 1)
 
+            # print("label: {}".format(type(labels.item())))
+            # print("predicted: {}".format(type(predicted.item())))
+
+            e_label.append(labels.data[0])
+            e_pred.append(predicted.data[0])
+
             loss = criterion(outputs, labels)
             val_losses += loss.item()
             total += labels.size(0)
@@ -83,6 +98,18 @@ for epoch in range(num_epochs):
 
         print("Epoch {} - Accuracy: {:.2f}% - Validation Loss : {:.4f}\n".format(
             epoch + 1, correct / total * 100, val_losses / (len(val_loader))))
+    
+    accu = accuracy_score(e_label, e_pred)
+    m_accu.append(accu)
+
+    recall = recall_score(e_label, e_pred, average='micro')
+    m_recall.append(recall)
+
+    prec = precision_score(e_label, e_pred, average='micro')
+    m_prec.append(prec)
+
+    f1 = f1_score(e_label, e_pred, average='micro')
+    m_f1.append(f1)
 
 if mod_num == 1:
     torch.save(model.state_dict(), 'test/model1.pth')
@@ -92,6 +119,28 @@ else:
 model.eval()
 dataiter = iter(val_loader)
 images, labels = dataiter.next()
+
+
+# for i in range(4):
+#     fig, axs = plt.subplot(221)
+#     if i == 0: axs[0, 0].plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_accu)
+#     if i == 1:axs[1, 0].plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_recall)
+#     if i == 2:axs[0, 1].plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_prec)
+#     if i == 3:axs[1, 1].plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_f1)
+#     fig.tight_layout()
+
+plt.plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_accu)
+plt.show()
+
+plt.plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_recall)
+plt.show()
+
+plt.plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_prec)
+plt.show()
+
+plt.plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_f1)
+plt.show()
+
 
 while True:
     i = int(input("Input image index to predict (1-32, out-range to exit): "))
