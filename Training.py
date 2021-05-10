@@ -120,15 +120,6 @@ model.eval()
 dataiter = iter(val_loader)
 images, labels = dataiter.next()
 
-
-# for i in range(4):
-#     fig, axs = plt.subplot(221)
-#     if i == 0: axs[0, 0].plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_accu)
-#     if i == 1:axs[1, 0].plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_recall)
-#     if i == 2:axs[0, 1].plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_prec)
-#     if i == 3:axs[1, 1].plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_f1)
-#     fig.tight_layout()
-
 plt.plot(np.linspace(0, num_epochs, num_epochs).astype(int), m_accu)
 plt.show()
 
