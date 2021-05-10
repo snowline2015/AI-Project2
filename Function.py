@@ -14,7 +14,7 @@ def predict_image(img, model):
 def imshow(img, mean=0.1307, std=0.3081):
     img = img / std + mean
     npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.imshow(np.transpose(npimg, (1, 2, 0)), cmap="gray")
     plt.show()
 
 
@@ -69,6 +69,5 @@ def test_image(mod_num):
         input_img = prepare_image('test/im_test.png', 2)
 
     prediction = torch.argmax(model(input_img)).item()
+    #prediction = torch.max(model(input_img), 1)[1].item()
     return str(prediction)
-    #_, preds = torch.max(model(input_img), 1)
-    #return str(preds[0].item())
